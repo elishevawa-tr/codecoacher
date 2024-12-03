@@ -17,5 +17,5 @@ export async function getRecommendations(data: FormData) {
     throw new Error("Failed to get recommendations. Please try again later.");
   }
 
-  return response.json();
+  return response.text();
 }

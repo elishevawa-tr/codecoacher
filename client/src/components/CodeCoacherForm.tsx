@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
@@ -26,6 +27,7 @@ import { getRecommendations } from "@/lib/api";
 
 export function CodeCoacherForm() {
   const { toast } = useToast();
+  const [recommendations, setRecommendations] = useState<string>("");
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -39,12 +41,12 @@ export function CodeCoacherForm() {
 
   const mutation = useMutation({
     mutationFn: getRecommendations,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setRecommendations(data);
       toast({
         title: "Success!",
-        description: "Your recommendations have been sent to your email.",
+        description: "Recommendations have been generated.",
       });
-      form.reset();
     },
     onError: (error) => {
       toast({
@@ -60,73 +62,18 @@ export function CodeCoacherForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="githubUsername"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>GitHub Username</FormLabel>
-              <FormControl>
-                <Input placeholder="johndoe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="john@example.com" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-8">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="fromDate"
+            name="githubUsername"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>From Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormLabel>GitHub Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="johndoe" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -134,61 +81,125 @@ export function CodeCoacherForm() {
 
           <FormField
             control={form.control}
-            name="toDate"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>To Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="john@example.com" type="email" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Getting Recommendations...
-            </>
-          ) : (
-            "Get Recommendations"
-          )}
-        </Button>
-      </form>
-    </Form>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="fromDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>From Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="toDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>To Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Getting Recommendations...
+              </>
+            ) : (
+              "Get Recommendations"
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      {recommendations && (
+        <div
+          className="mt-8 p-6 bg-white rounded-lg shadow-md prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: recommendations }}
+        />
+      )}
+    </div>
   );
 }

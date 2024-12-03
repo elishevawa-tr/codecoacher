@@ -1,7 +1,7 @@
 import { FormData } from "./schemas";
 import { format } from "date-fns";
 
-const API_BASE = "https://stg-codecoacher-ai.azurewebsites.net/api/CodeCoacherHttp";
+const API_BASE = "/api/recommendations";
 
 export async function getRecommendations(data: FormData) {
   const { githubUsername, email, fromDate, toDate } = data;
